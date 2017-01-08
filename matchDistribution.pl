@@ -30,7 +30,7 @@ $Data::Dumper::Sortkeys =1;
 ###############################
 # Output (to standard output):
 ###############################
-# Pseudo-random subset of subject file (i.e., arg3)
+# Pseudo-random subset of subject file (i.e., arg3), such that its distribution matches T's density as closely as possible.
 
 #########
 # Notes:
@@ -46,7 +46,7 @@ $Data::Dumper::Sortkeys =1;
 # ln -s subject.txt output.0.txt
 # for i in `seq 1 $passes`; do
 # let j=$i-1
-# matchDistribution.pl target 500 subject.txt output.$j.txt > output.$i.txt
+# matchDistribution.pl target.txt 500 output.$j.txt > output.$i.txt
 # rm -f output.$j.txt
 # done
 
