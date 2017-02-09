@@ -62,17 +62,18 @@ Use **matchDistributionLoop.sh** and **matchDistributionKStest.r**. Both scripts
 matchDistributionLoop.sh &lt;passes> &lt;doKolmogorov-Smirnov> &lt;target> &lt;subject> &lt;bins> &lt;breakIfKSTest>
 
 Where:
-	&lt;passes> (int): Maximum number of passes to perform
 
-        <doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call B<matchDistributionKStest.r> (courtesy of Andres Lanzos, CRG).
+&lt;passes> (int): Maximum number of passes to perform
 
-        <target> (string): Path to file containing T's values.
+&lt;doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call **matchDistributionKStest.r** (courtesy of Andres Lanzos, CRG).
 
-        <subject> (string): Path to tab-separated file containing S's identifiers and values.
+&lt;target> (string): Path to file containing T's values.
 
-        <bins> (int): Number of bins to split the distributions into.
+&lt;subject> (string): Path to tab-separated file containing S's identifiers and values.
 
-        <breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
+&lt;bins> (int): Number of bins to split the distributions into.
+
+&lt;breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
 
 # DEPENDENCIES
 

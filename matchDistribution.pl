@@ -20,6 +20,8 @@ matchDistribution
 
 =head1 SYNOPSIS
 
+Given distinct "subject" (S) and a "target" (T) distributions, this script attempts to mimic T's density (i.e., its shape) by pseudo-randomly sampling from S's population.
+
 matchDistribution.pl <OPTIONS> <arg1> <arg2> <arg3>
 
 =head2 ARGUMENTS/INPUT
@@ -36,9 +38,9 @@ matchDistribution.pl <OPTIONS> <arg1> <arg2> <arg3>
 - transform (string)
     = bin transform-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
 
-    Possible values: 'log10' only.
+Possible values: 'log10' only.
 
-    Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
+Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
 
 - verbose
 	= make STDERR more verbose
@@ -77,12 +79,18 @@ Use B<matchDistributionLoop.sh> and B<matchDistributionKStest.r>. Both scripts n
 matchDistributionLoop.sh <passes> <doKolmogorov-Smirnov> <target> <subject> <bins> <breakIfKSTest>
 
 Where:
-	<passes> (int): Maximum number of passes to perform
-	<doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. (This will call B<matchDistributionKStest.r>).
-	<target> (string): Path to file containing T's values.
-	<subject> (string): Path to tab-separated file containing S's identifiers and values.
-	<bins> (int): Number of bins to split the distributions into.
-	<breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
+
+<passes> (int): Maximum number of passes to perform
+
+<doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call B<matchDistributionKStest.r> (courtesy of Andres Lanzos, CRG).
+
+<target> (string): Path to file containing T's values.
+
+<subject> (string): Path to tab-separated file containing S's identifiers and values.
+
+<bins> (int): Number of bins to split the distributions into.
+
+<breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
 
 
 
