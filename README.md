@@ -21,9 +21,9 @@ matchDistribution.pl <OPTIONS> &lt;arg1> &lt;arg2> &lt;arg3>
 \- transform (string)
     = bin transform-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
 
-    Possible values: 'log10' only.
+Possible values: 'log10' only.
 
-    Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
+Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
 
 \- verbose
 	= make STDERR more verbose
@@ -64,7 +64,7 @@ matchDistributionLoop.sh &lt;passes> &lt;doKolmogorov-Smirnov> &lt;target> &lt;s
 Where:
 	&lt;passes> (int): Maximum number of passes to perform
 
-        <doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. (This will call B<matchDistributionKStest.r>).
+        <doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call B<matchDistributionKStest.r> (courtesy of Andres Lanzos, CRG).
 
         <target> (string): Path to file containing T's values.
 
