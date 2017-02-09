@@ -2,68 +2,117 @@
 use Getopt::Long;
 use strict;
 use warnings;
+use Pod::Usage;
 use Data::Dumper;
 use List::Util 'shuffle';
 $|=1;
 $Data::Dumper::Sortkeys =1;
 
-###############
-# Description:
-###############
-# Given distinct "subject" (S) and a "target" (T) distributions, this script attempts to mimic T's density (i.e., its shape) by pseudo-randomly sampling from S's population.
-# Warning: The script attempts to match T's density only, not its population size.
+my $message_text  = "Error\n";
+my $exit_status   = 2;          ## The exit status to use
+my $verbose_level = 99;          ## The verbose level to use
+my $filehandle    = \*STDERR;   ## The filehandle to write to
+my $sections = "NAME|SYNOPSIS|DESCRIPTION";
 
-###################
-# Arguments/Input:
-###################
-#    arg1: path to file containing T's values (1 column, 1 value per line)
-#    arg2: number of bins to split the distributions into
-#    arg3: path to tab-separated file containing S's identifiers and values (column 1: unique identifier; column 2: corresponding value)
+=head1 NAME
 
-###########
-# Options:
-###########
-#    transform: bin `transform`-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
-#     Possible values: 'log10' only.
-#     binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
+matchDistribution
 
-###############################
-# Output (to standard output):
-###############################
-# Pseudo-random subset of subject file (i.e., arg3), such that its distribution matches T's density as closely as possible.
+=head1 SYNOPSIS
 
-#########
-# Notes:
-#########
+matchDistribution.pl <OPTIONS> <arg1> <arg2> <arg3>
 
-# Pseudo-randomness: items from S's population are randomly selected **within bins**, not within the entire population, hence the "pseudo" prefix
+=head2 ARGUMENTS/INPUT
 
-# Log-transform: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions (see `transform` option).
+- arg1: Path to file containing T's values (1 column, 1 value per line).
 
-# Re-iteration: it might be necessary to call the script several times sequentially (i.e. input -> output1; output1 -> output2; output2 -> output3, etc.) until reaching an optimum. Here's an example of a wrapper bash script that does just this (100 iterations, 500 bins):
+- arg2: Number of bins to split the distributions into.
 
-# export passes=100
-# ln -s subject.txt output.0.txt
-# for i in `seq 1 $passes`; do
-# let j=$i-1
-# matchDistribution.pl target.txt 500 output.$j.txt > output.$i.txt
-# rm -f output.$j.txt
-# done
+- arg3: Path to tab-separated file containing S's identifiers and values (column 1: unique identifier; column 2: corresponding value).
 
-# The final output will be in the file named output.$passes.txt
+
+=head2 OPTIONS
+
+- transform (string)
+    = bin transform-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
+
+    Possible values: 'log10' only.
+
+    Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
+
+- verbose
+	= make STDERR more verbose
+
+=head2 OUTPUT
+
+To STDOUT.
+
+The script will output a pseudo-random subset of the subject file (i.e., arg3), such that its distribution matches T's density as closely as possible.
+
+=head1 DESCRIPTION
+
+Given distinct B<"subject" (S)> and a B<"target" (T)> distributions, this script attempts to mimic T's density (i.e., its shape) by pseudo-randomly1 sampling from S's population.
+
+Warning: The script attempts to match T's density only, not its population size.
+
+IMPORTANT NOTES
+
+- "Pseudo-randomness"
+
+Items from S's population are randomly selected within bins, not within the entire population, hence the "pseudo" prefix
+
+- Log-transform
+
+Binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions (see transform option).
+
+- Re-iteration
+
+It might be necessary to call the script several times sequentially (i.e. input -> output1; output1 -> output2; output2 -> output3, etc., where "->" denotes a matchDistribution call) until reaching an optimum.
+This is what the accompanying B<matchDistributionLoop.sh> script does (see below)
+
+=head1 RE-ITERATIONS
+
+Use B<matchDistributionLoop.sh> and B<matchDistributionKStest.r>. Both scripts need to be in your $PATH.
+
+matchDistributionLoop.sh <passes> <doKolmogorov-Smirnov> <target> <subject> <bins> <breakIfKSTest>
+
+Where:
+	<passes> (int): Maximum number of passes to perform
+	<doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. (This will call B<matchDistributionKStest.r>).
+	<target> (string): Path to file containing T's values.
+	<subject> (string): Path to tab-separated file containing S's identifiers and values.
+	<bins> (int): Number of bins to split the distributions into.
+	<breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
+
+
+
+=head1 DEPENDENCIES
+
+CPAN: List::Util 'shuffle'
+
+=head1 AUTHOR
+
+Julien Lagarde, CRG, Barcelona, contact julienlag@gmail.com
+
+=cut
 
 my $transform;
+my $verbose='';
 GetOptions (
-        'transform=s' => \$transform
-
+        'transform=s' => \$transform,
+        'verbose' => \$verbose
         );
 
 our $pseudocount=0.001;
 
 if(defined $transform){
 	unless ($transform eq 'log10'){
-		die "invalid transform value (must be 'log10')\n";
-	}
+		$message_text="invalid transform value (must be 'log10')\n";
+		pod2usage( { -message => $message_text,
+        		     -exitval => $exit_status  ,
+               		-verbose => $verbose_level,
+               -output  => $filehandle } );
+		  }
 	print STDERR "Working on $transform - transformed values (with pseudocount = $pseudocount). Output values will be the original, non-transformed ones, though.\n";
 }
 else{
@@ -80,12 +129,24 @@ my $bins=$ARGV[1]; # number of bins to separate the distrib into
 my $targetObjectsToSubsampleFrom=$ARGV[2]; # two columns, e.g. column 1 is gene_id, column2 is RPKM
 my @origvalues=();
 
+if($#ARGV!=2){
+	$message_text="Wrong numbr of arguments.\n";
+pod2usage( { -message => $message_text,
+        		     -exitval => $exit_status  ,
+               		-verbose => $verbose_level,
+               -output  => $filehandle } );
+		  }
+
 open D, "$distribToMatch" or die $!;
 
 print STDERR "Reading target distribution to mimic...\n";
 while(<D>){
 	chomp;
 	push(@origvalues, $transform_subs{$transform}->($_));
+		if ($.%1000000 == 0){
+                print STDERR "\tProcessed $. lines\n";
+        }
+
 }
 
 #sort array numerically
@@ -145,24 +206,24 @@ close T;
 print STDERR "Done...\n";
 
 
-print STDERR "Found $countValuesWithinRange values within range in $targetObjectsToSubsampleFrom.\n";
+print STDERR "Found $countValuesWithinRange values within range in $targetObjectsToSubsampleFrom.\n" if($verbose);
 
 foreach my $bin (keys %binnedPop){
 	my $size=$#{$binnedPop{$bin}}+1;
-	print STDERR "\nbin $bin: N= $size\n";
-	print STDERR " Fraction of input: ".$size/$countValuesWithinRange."\n";
-	print STDERR " Desired fraction in output: ".$binSizes{$bin}."\n";
+	print STDERR "\nbin $bin: N= $size\n" if($verbose);
+	print STDERR " Fraction of input: ".$size/$countValuesWithinRange."\n" if($verbose);
+	print STDERR " Desired fraction in output: ".$binSizes{$bin}."\n" if($verbose);
 	my $numberOfItemsToPick=int($binSizes{$bin}*$countValuesWithinRange);
 	$numberOfItemsToPick=$size if ($size<$numberOfItemsToPick);
-	print STDERR " Will try to pick $numberOfItemsToPick items at random.\n";
-	print STDERR "###### WARNING bin $bin will be of size 0!! (No values available in input)\n" if ($size==0);
+	print STDERR " Will try to pick $numberOfItemsToPick items at random.\n" if($verbose);
+	print STDERR "###### WARNING bin $bin will be of size 0!! (No values available in input)\n" if ($size==0 && $verbose);
 	my @shuffled = shuffle(@{$binnedPop{$bin}});
 	my @ids=splice(@shuffled, 0, $numberOfItemsToPick);
 	foreach my $id (@ids){
 		print "$id\t$targetIdsToValues{$id}\n";
 	}
 }
-print STDERR "Done! (You should probably plot the output and target distributions)\n";
+print STDERR "Done!\n";
 
 sub log10 {
         my $n = shift;
