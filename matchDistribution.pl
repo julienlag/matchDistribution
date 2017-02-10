@@ -20,79 +20,96 @@ matchDistribution
 
 =head1 SYNOPSIS
 
-Given distinct "subject" (S) and a "target" (T) distributions, this script attempts to mimic T's density (i.e., its shape) by pseudo-randomly sampling from S's population.
+Given distinct B<"subject" (S)> and a B<"target" (T)> distributions, this script attempts to mimic T's density (I<i.e.>, its shape) by randomly sampling from bins in S's population.
 
-matchDistribution.pl <OPTIONS> <arg1> <arg2> <arg3>
+B<Usage>: C<< matchDistribution.pl <OPTIONS> <arg1> <arg2> <arg3> >>
+
 
 =head2 ARGUMENTS/INPUT
 
-- arg1: Path to file containing T's values (1 column, 1 value per line).
+=over
 
-- arg2: Number of bins to split the distributions into.
+=item B<arg1>: Path to file containing T's values (1 column, 1 value per line).
 
-- arg3: Path to tab-separated file containing S's identifiers and values (column 1: unique identifier; column 2: corresponding value).
+=item B<arg2>: Number of bins to split the distributions into.
 
+=item B<arg3>: Path to tab-separated file containing S's identifiers and values (column 1: unique identifier; column 2: corresponding value).
+
+=back
 
 =head2 OPTIONS
 
-- transform (string)
-    = bin transform-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
+=over
+
+=item B<transform> (string)
+= bin transform-transformed values in both distributions. Output values will be the original, non-transformed ones, though.
 
 Possible values: 'log10' only.
 
 Note: binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions.
 
-- verbose
-	= make STDERR more verbose
+=item B<verbose>
+= make STDERR more verbose
+
+=back
 
 =head2 OUTPUT
 
 To STDOUT.
 
-The script will output a pseudo-random subset of the subject file (i.e., arg3), such that its distribution matches T's density as closely as possible.
+The script will output a pseudo-random subset of the subject file (I<i.e.>, arg3), such that its distribution matches T's density as closely as possible.
 
 =head1 DESCRIPTION
 
-Given distinct B<"subject" (S)> and a B<"target" (T)> distributions, this script attempts to mimic T's density (i.e., its shape) by pseudo-randomly1 sampling from S's population.
+Given distinct B<"subject" (S)> and a B<"target" (T)> distributions, this script attempts to mimic T's density (I<i.e.>, its shape) by pseudo-randomly sampling from S's population.
 
 Warning: The script attempts to match T's density only, not its population size.
 
 IMPORTANT NOTES
 
-- "Pseudo-randomness"
+=over
+
+=item B<"Pseudo-randomness">
 
 Items from S's population are randomly selected within bins, not within the entire population, hence the "pseudo" prefix
 
-- Log-transform
+=item B<Number of bins to choose>
 
-Binning into log10-transformed is highly recommended e.g. for matching FPKM/RPKM distributions (see transform option).
+Usually the more, the better.
 
-- Re-iteration
+=item B<Log-transform>
 
-It might be necessary to call the script several times sequentially (i.e. input -> output1; output1 -> output2; output2 -> output3, etc., where "->" denotes a matchDistribution call) until reaching an optimum.
-This is what the accompanying B<matchDistributionLoop.sh> script does (see below)
+Binning into log10-transformed is highly recommended I<e.g.> for matching FPKM/RPKM distributions (see transform option).
+
+=item B<Re-iteration>
+
+It might be necessary to call the script several times sequentially (I<i.e.> input -> output1; output1 -> output2; output2 -> output3, etc., where "->" denotes a matchDistribution call) until reaching an optimum.
+This is what the accompanying B<matchDistributionLoop.sh> script does (see below).
+
+=back
 
 =head1 RE-ITERATIONS
 
 Use B<matchDistributionLoop.sh> and B<matchDistributionKStest.r>. Both scripts need to be in your $PATH.
-
-matchDistributionLoop.sh <passes> <doKolmogorov-Smirnov> <target> <subject> <bins> <breakIfKSTest>
+B<Usage>: C<< matchDistributionLoop.sh <passes> <doKolmogorov-Smirnov> <target> <subject> <bins> <breakIfKSTest> >>
 
 Where:
 
-<passes> (int): Maximum number of passes to perform
+=over
 
-<doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call B<matchDistributionKStest.r> (courtesy of Andres Lanzos, CRG).
+=item B<passes> (int): Maximum number of passes to perform
 
-<target> (string): Path to file containing T's values.
+=item B<doKolmogorov-Smirnov> (0|1 boolean): Toggle do KS test on resulting distributions after each pass, and print p-value. This will call B<matchDistributionKStest.r> (courtesy of Andres Lanzos, CRG).
 
-<subject> (string): Path to tab-separated file containing S's identifiers and values.
+=item B<target> (string): Path to file containing T's values.
 
-<bins> (int): Number of bins to split the distributions into.
+=item B<subject> (string): Path to tab-separated file containing S's identifiers and values.
 
-<breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (i.e., before reaching the maximum number of passes)
+=item B<bins> (int): Number of bins to split the distributions into.
 
+=item B<breakIfKSTest> (0|1 boolean): break loop if KS test gives p>0.05 (I<i.e.>, before reaching the maximum number of passes).
 
+=back
 
 =head1 DEPENDENCIES
 
