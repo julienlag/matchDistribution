@@ -60,6 +60,7 @@ IMPORTANT NOTES
 # RE-ITERATIONS
 
 Use **matchDistributionLoop.sh** and **matchDistributionKStest.r**. Both scripts need to be in your $PATH.
+
 **Usage**: `matchDistributionLoop.sh <passes> <doKolmogorov-Smirnov> <target> <subject> <bins> <breakIfKSTest>`
 
 Where:
